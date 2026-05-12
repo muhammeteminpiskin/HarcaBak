@@ -3,7 +3,7 @@ using HarcaBak.Entities;
 using Microsoft.EntityFrameworkCore;
 namespace HarcaBak.Services
 {
-    public class CategoryService
+    public class CategoryService: ICategoryService
     {
         private readonly AppDbContext _context;
         public CategoryService(AppDbContext appDbContext)

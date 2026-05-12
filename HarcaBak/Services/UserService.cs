@@ -14,6 +14,7 @@ namespace HarcaBak.Services
         public void Add(User user)
         {
             _context.Users.Add(user);
+            _context.SaveChanges();
         }
         public List<User> GetAll()
         {

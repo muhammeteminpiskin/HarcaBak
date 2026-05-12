@@ -12,6 +12,8 @@ namespace HarcaBak.Services
         }
         public void Add(Transaction transaction)
         {
+            transaction.CreatedDate = DateTime.Now;
+            transaction.CreatedBy = 1; // Şuanlık 1 olarak ayarlandı, ilerde dinamikleşecek.
             _context.Transactions.Add(transaction);
             _context.SaveChanges();
         }
@@ -34,8 +36,21 @@ namespace HarcaBak.Services
         }
         public void Update(Transaction transaction)
         {
-            _context.Update(transaction);
-            _context.SaveChanges();
+            var existingTransaction = _context.Transactions.FirstOrDefault(x => x.Id == transaction.Id);
+            if (existingTransaction != null)
+            {
+                existingTransaction.Amount = transaction.Amount;
+                existingTransaction.Description = transaction.Description;
+                existingTransaction.Type = transaction.Type;
+                existingTransaction.CategoryId = transaction.CategoryId;
+                existingTransaction.UpdatedDate = DateTime.Now;
+                existingTransaction.UpdatedBy = 1; // Şuanlık 1 olarak ayarlandı, ilerde dinamikleşecek.
+                _context.SaveChanges();
+            }
+        }
+        public List<Transaction> GetByCategoryId(int categoryId)
+        {
+            return _context.Transactions.Where(x => x.CategoryId == categoryId).ToList();
         }
     }
 }

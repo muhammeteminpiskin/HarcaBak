@@ -8,5 +8,6 @@ namespace HarcaBak.Services
         void Delete(int id);
         void Update(Transaction transaction);
         List<Transaction> GetAll();
+        List<Transaction> GetByCategoryId(int categoryId);
     }
 }
