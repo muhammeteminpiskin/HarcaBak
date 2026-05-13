@@ -19,7 +19,7 @@ namespace HarcaBak.Services
         }
         public List<Transaction> GetAll()
         {
-            return _context.Transactions.ToList();
+            return _context.Transactions.Include(x => x.Category).Include(x => x.User).ToList();
         }
         public Transaction? GetById(int id)
         {
@@ -51,6 +51,14 @@ namespace HarcaBak.Services
         public List<Transaction> GetByCategoryId(int categoryId)
         {
             return _context.Transactions.Where(x => x.CategoryId == categoryId).ToList();
+        }
+        public List<Transaction> GetByDateRange(DateTime startDate, DateTime endDate)
+        {
+            return _context.Transactions.Where(x => x.Date >= startDate && x.Date <= endDate).ToList();
+        }
+        public List<Transaction> GetByType(TransactionType type)
+        {
+            return _context.Transactions.Where(x => x.Type == type).ToList();
         }
     }
 }

@@ -9,5 +9,7 @@ namespace HarcaBak.Services
         void Update(Transaction transaction);
         List<Transaction> GetAll();
         List<Transaction> GetByCategoryId(int categoryId);
+        List<Transaction> GetByDateRange(DateTime startDate, DateTime endDate);
+        List<Transaction> GetByType(TransactionType type);
     }
 }
