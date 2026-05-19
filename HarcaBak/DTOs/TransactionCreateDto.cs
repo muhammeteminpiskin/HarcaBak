@@ -5,7 +5,6 @@ namespace HarcaBak.DTOs
 {
     public class TransactionCreateDto
     {
-        [Column(TypeName = "decimal(18,2)")]
         public decimal Amount { get; set; }
         public string? Description { get; set; }
         public DateTime Date { get; set; }

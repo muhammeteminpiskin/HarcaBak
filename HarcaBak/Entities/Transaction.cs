@@ -2,7 +2,7 @@
 
 namespace HarcaBak.Entities
 {
-    public class Transaction: BaseEntity
+    public class Transaction : BaseEntity
     {
         [Column(TypeName = "decimal(18,2)")]
         public decimal Amount { get; set; }
@@ -15,7 +15,7 @@ namespace HarcaBak.Entities
         public int UserId { get; set; }
 
         // Navigation Properties
-        public Category Category { get; set; }
-        public User User { get; set; }
+        public Category Category { get; set; } = null!;
+        public User User { get; set; } = null!;
     }
 }

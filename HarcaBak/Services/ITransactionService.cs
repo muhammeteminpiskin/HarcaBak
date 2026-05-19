@@ -11,5 +11,9 @@ namespace HarcaBak.Services
         List<Transaction> GetByCategoryId(int categoryId);
         List<Transaction> GetByDateRange(DateTime startDate, DateTime endDate);
         List<Transaction> GetByType(TransactionType type);
+        List<Transaction> GetByUserId(int userId);
+        decimal GetTotalExpenseByUserId(int userId);
+        decimal GetTotalIncomeByUserId(int userId);
+        decimal GetBalanceByUserId(int userId);
     }
 }

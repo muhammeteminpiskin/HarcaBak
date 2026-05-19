@@ -3,7 +3,24 @@ using HarcaBak.Services;
 using HarcaBak.Entities;
 using Microsoft.EntityFrameworkCore;
 using HarcaBak.DTOs;
+using Microsoft.IdentityModel.Tokens;
 
+// Helper Method
+TransactionListDto ConvertToTransactionListDto(Transaction transaction)
+{
+    return new TransactionListDto
+    {
+        Id = transaction.Id,
+        Amount = transaction.Amount,
+        Description = transaction.Description,
+        Date = transaction.Date,
+        Type = transaction.Type,
+        CategoryId = transaction.CategoryId,
+        CategoryName = transaction.Category.Name,
+        UserId = transaction.UserId,
+        UserName = transaction.User.Name
+    };
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,34 +61,115 @@ var userGroup = app.MapGroup("/api/users");
 transactionGroup.MapGet("/", (ITransactionService transactionService) =>
 {
     var transactions = transactionService.GetAll();
-    return Results.Ok(transactions);
+    var results = transactions.Select(transaction => ConvertToTransactionListDto(transaction))
+    .ToList();
+
+    return Results.Ok(results);
 });
 
 // Bütün kullanıcıları listele (admin paneli için)
 userGroup.MapGet("/", (IUserService userService) => {
     var users = userService.GetAll();
-    return Results.Ok(users);
+    var result = users.Select(user => new UserListDto
+    {
+        Id = user.Id,
+        Name = user.Name,
+        Email = user.Email
+    }).ToList();
+
+    return Results.Ok(result);
 });
 
 // Bütün kategorileri listele
 categoryGroup.MapGet("/", (ICategoryService categoryService) =>
 {
     var categories = categoryService.GetAll();
-    return Results.Ok(categories);
+    var results = categories.Select(category => new CategoryListDto
+    {
+        Id = category.Id,
+        Name = category.Name
+    }).ToList();
+
+    return Results.Ok(results);
 });
 
 // Belirli bir işlemi getir
 transactionGroup.MapGet("/{id}", (ITransactionService transactionService, int id) =>
 {
     var transaction = transactionService.GetById(id);
-    if (transaction != null)
+    if (transaction == null)
     {
-        return Results.Ok(transaction);
+        return Results.NotFound("İşlem bulunamadı");
     }
-    else
+    var result = ConvertToTransactionListDto(transaction);
+
+    return Results.Ok(result);
+});
+
+// Belirli bir kategoriyi getir
+categoryGroup.MapGet("/{id}", (int id, ICategoryService categoryService) =>
+{
+    var category = categoryService.GetById(id);
+    if (category == null)
     {
-        return Results.NotFound("İşlem Bulunamadı");
+        return Results.NotFound("Kategori bulunamadı");
     }
+    var result = new CategoryListDto
+    {
+        Id = category.Id,
+        Name = category.Name
+    };
+
+    return Results.Ok(result);
+});
+
+// Belirli bir kullanıcıyı getir
+userGroup.MapGet("/{id}", (int id, IUserService userService) =>
+{
+    var user = userService.GetById(id);
+    if (user == null)
+    {
+        return Results.NotFound("Eşleşen kullanıcı bulunamadı");
+    }
+    var result = new UserListDto
+    {
+        Id = user.Id,
+        Name = user.Name,
+        Email = user.Email
+    };
+
+    return Results.Ok(result);
+});
+
+// Belirli bir kategoriye göre işlemleri getir
+transactionGroup.MapGet("/filter/category/{categoryId}", (int categoryId, ITransactionService transactionService) =>
+{
+    var transactions = transactionService.GetByCategoryId(categoryId);
+    var result = transactions.Select(transaction => ConvertToTransactionListDto(transaction))
+    .ToList();
+    return Results.Ok(result);
+});
+
+// Belirli bir kullanıcının işlemlerini getir
+transactionGroup.MapGet("/filter/user/{userId}", (int userId, ITransactionService transactionService) =>
+{
+    var transactions = transactionService.GetByUserId(userId);
+    var results = transactions
+    .Select(transaction => ConvertToTransactionListDto(transaction))
+    .ToList();
+
+    return Results.Ok(results);
+});
+// Belirli bir kullanıcının total hesaplamalarını getir
+transactionGroup.MapGet("/summary/user/{userId}", (int userId, ITransactionService transactionService) =>
+{
+    var result = new TransactionSummaryDto
+    {
+        TotalExpense = transactionService.GetTotalExpenseByUserId(userId),
+        TotalIncome = transactionService.GetTotalIncomeByUserId(userId),
+        Balance = transactionService.GetBalanceByUserId(userId)
+    };
+    return Results.Ok(result);
 });
 
 // Bir işlem ekle
@@ -80,6 +178,10 @@ transactionGroup.MapPost("/", (TransactionCreateDto dto, ITransactionService tra
     if (dto.Amount <= 0)
     {
         return Results.BadRequest("Tutar değeri 0'dan büyük olmalıdır.");
+    }
+    if (dto.Description != null && dto.Description.Length > 100)
+    {
+        return Results.BadRequest("Açıklama uzunluğu en fazla 100 karakter içerebilir");
     }
     var newTransaction = new Transaction
     {
@@ -98,6 +200,10 @@ transactionGroup.MapPost("/", (TransactionCreateDto dto, ITransactionService tra
 // Bir kategori ekle
 categoryGroup.MapPost("/", (CategoryCreateDto dto, ICategoryService categoryService) =>
 {
+    if (string.IsNullOrWhiteSpace(dto.Name))
+    {
+        return Results.BadRequest("Kategori adı boş bırakılamaz");
+    }
     var newCategory = new Category()
     {
         Name = dto.Name
@@ -109,6 +215,18 @@ categoryGroup.MapPost("/", (CategoryCreateDto dto, ICategoryService categoryServ
 // Bir kullanıcı ekle
 userGroup.MapPost("/", (UserCreateDto dto, IUserService userService) =>
 {
+    if (string.IsNullOrWhiteSpace(dto.Name))
+    {
+        return Results.BadRequest("İsim boş bırakılamaz");
+    }
+    if (string.IsNullOrWhiteSpace(dto.Email) || !dto.Email.Contains("@"))
+    {
+        return Results.BadRequest("Geçersiz mail tanımlaması");
+    }
+    if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length < 6)
+    {
+        return Results.BadRequest("Şifre en az 6 karakter içermeli");
+    }
     var newUser = new User()
     {
         Name = dto.Name,
@@ -127,18 +245,21 @@ transactionGroup.MapPut("/{id}", (int id, TransactionUpdateDto dto, ITransaction
     {
         return Results.NotFound("Eşleşen işlem bulunamadı");
     }
-    else if (dto.Amount <= 0)
+    if (dto.Description != null && dto.Description.Length > 100)
+    {
+        return Results.BadRequest("Açıklama uzunluğu en fazla 100 karakter içerebilir");
+    }
+    if (dto.Amount <= 0)
     {
         return Results.BadRequest("Tutar değeri sıfır veya daha küçük olamaz");
     }
-    else
-    {
+
         transaction.Amount = dto.Amount;
         transaction.CategoryId = dto.CategoryId;
         transaction.Date = dto.Date;
         transaction.Description = dto.Description;
         transaction.Type = dto.Type;
-    }
+
     transactionService.Update(transaction);
     return Results.Ok("İşlem başarıyla güncelleştirildi");
 });
@@ -151,11 +272,14 @@ categoryGroup.MapPut("/{id}", (int id, CategoryUpdateDto dto, ICategoryService c
     {
         return Results.NotFound("Eşleşen kategori bulunamadı");
     }
-    else
+    if (string.IsNullOrWhiteSpace(dto.Name))
     {
+        return Results.BadRequest("Kategori adı boş bırakılamaz");
+    }
+
         category.Name = dto.Name;
         categoryService.Update(category);
-    }
+
     return Results.Ok("Kategori başarıyla güncellendi");
 });
 
@@ -167,12 +291,21 @@ userGroup.MapPut("/{id}", (int id, UserUpdateDto dto, IUserService userService) 
     {
         return Results.NotFound("Eşleşen kullanıcı bulunamadı");
     }
-    else
+    if (string.IsNullOrWhiteSpace(dto.Name))
     {
-        user.Name = dto.Name;
-        user.Password = dto.Password;
-        user.Email = dto.Email;
+        return Results.BadRequest("İsim boş bırakılamaz");
     }
+    if (string.IsNullOrWhiteSpace(dto.Email) || !dto.Email.Contains("@"))
+    {
+        return Results.BadRequest("Geçersiz mail tanımlaması");
+    }
+    if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length < 6)
+    {
+        return Results.BadRequest("Şifre en az 6 karakter içermeli");
+    }
+    user.Name = dto.Name;
+    user.Email = dto.Email;
+    user.Password = dto.Password;
     userService.Update(user);
     return Results.Ok("Bilgileriniz başarıyla güncellendi");
 });
@@ -217,14 +350,21 @@ userGroup.MapDelete("/{id}", (int id, IUserService userService) =>
 transactionGroup.MapGet("/filter/date", (DateTime startDate, DateTime endDate, ITransactionService transactionService) =>
 {
     var filterTransactions = transactionService.GetByDateRange(startDate, endDate);
-    return Results.Ok(filterTransactions);
+    var result = filterTransactions
+    .Select(transaction => ConvertToTransactionListDto(transaction))
+    .ToList();
+
+    return Results.Ok(result);
 });
 
 // Belirli tipteki işlemleri getir (gelir, gider) 
 transactionGroup.MapGet("/filter/type", (TransactionType type, ITransactionService transactionService) =>
 {
     var filterTransactions = transactionService.GetByType(type);
-    return Results.Ok(filterTransactions);
+    var result = filterTransactions
+    .Select(transaction => ConvertToTransactionListDto(transaction))
+    .ToList();
+    return Results.Ok(result);
 });
 
 app.Run();
