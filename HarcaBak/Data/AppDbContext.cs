@@ -19,14 +19,24 @@ namespace HarcaBak.Data
                 if (item.Entity is BaseEntity entity && item.State == EntityState.Added)
                 {
                     entity.CreatedDate = DateTime.Now;
-                    entity.CreatedBy = 1;
+
+                    if (entity.CreatedBy <= 0)
+                    {
+                        entity.CreatedBy = 1;
+                    }
                 }
+
                 if (item.Entity is BaseEntity entity2 && item.State == EntityState.Modified)
                 {
                     entity2.UpdatedDate = DateTime.Now;
-                    entity2.UpdatedBy = 1;
+
+                    if (entity2.UpdatedBy == null || entity2.UpdatedBy <= 0)
+                    {
+                        entity2.UpdatedBy = 1;
+                    }
                 }
             }
+
             return base.SaveChanges();
         }
 

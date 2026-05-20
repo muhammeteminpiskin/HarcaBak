@@ -94,5 +94,15 @@ namespace HarcaBak.Services
 
             return totalIncome - totalExpense;
         }
+        public bool HasTransactionsByCategoryId(int categoryId)
+        {
+            return _context.Transactions
+                .Any(x => x.CategoryId == categoryId);
+        }
+        public bool HasTransactionsByUserId(int userId)
+        {
+            return _context.Transactions
+                .Any(x => x.UserId == userId);
+        }
     }
 }

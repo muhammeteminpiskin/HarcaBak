@@ -3,7 +3,7 @@ using HarcaBak.Services;
 using HarcaBak.Entities;
 using Microsoft.EntityFrameworkCore;
 using HarcaBak.DTOs;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Identity;
 
 // Helper Method
 TransactionListDto ConvertToTransactionListDto(Transaction transaction)
@@ -56,6 +56,7 @@ app.UseHttpsRedirection();
 var transactionGroup = app.MapGroup("/api/transactions");
 var categoryGroup = app.MapGroup("/api/categories");
 var userGroup = app.MapGroup("/api/users");
+var authGroup = app.MapGroup("/api/auth");
 
 // Bütün işlemleri listele
 transactionGroup.MapGet("/", (ITransactionService transactionService) =>
@@ -68,7 +69,8 @@ transactionGroup.MapGet("/", (ITransactionService transactionService) =>
 });
 
 // Bütün kullanıcıları listele (admin paneli için)
-userGroup.MapGet("/", (IUserService userService) => {
+userGroup.MapGet("/", (IUserService userService) =>
+{
     var users = userService.GetAll();
     var result = users.Select(user => new UserListDto
     {
@@ -99,7 +101,7 @@ transactionGroup.MapGet("/{id}", (ITransactionService transactionService, int id
     var transaction = transactionService.GetById(id);
     if (transaction == null)
     {
-        return Results.NotFound("İşlem bulunamadı");
+        return Results.NotFound("İşlem bulunamadı.");
     }
     var result = ConvertToTransactionListDto(transaction);
 
@@ -165,6 +167,7 @@ transactionGroup.MapGet("/summary/user/{userId}", (int userId, ITransactionServi
 {
     var result = new TransactionSummaryDto
     {
+        UserId = userId,
         TotalExpense = transactionService.GetTotalExpenseByUserId(userId),
         TotalIncome = transactionService.GetTotalIncomeByUserId(userId),
         Balance = transactionService.GetBalanceByUserId(userId)
@@ -173,15 +176,27 @@ transactionGroup.MapGet("/summary/user/{userId}", (int userId, ITransactionServi
 });
 
 // Bir işlem ekle
-transactionGroup.MapPost("/", (TransactionCreateDto dto, ITransactionService transactionService) =>
+transactionGroup.MapPost("/", (TransactionCreateDto dto, ITransactionService transactionService
+    , ICategoryService categoryService
+    , IUserService userService) =>
 {
     if (dto.Amount <= 0)
     {
-        return Results.BadRequest("Tutar değeri 0'dan büyük olmalıdır.");
+        return Results.BadRequest("Tutar 0'dan büyük olmalıdır.");
     }
     if (dto.Description != null && dto.Description.Length > 100)
     {
-        return Results.BadRequest("Açıklama uzunluğu en fazla 100 karakter içerebilir");
+        return Results.BadRequest("Açıklama en fazla 100 karakter olabilir.");
+    }
+    var user = userService.GetById(dto.UserId);
+    if (user == null)
+    {
+        return Results.BadRequest("Kullanıcı bulunamadı");
+    }
+    var category = categoryService.GetById(dto.CategoryId);
+    if (category == null)
+    {
+        return Results.BadRequest("Kategori bulunamadı");
     }
     var newTransaction = new Transaction
     {
@@ -190,7 +205,8 @@ transactionGroup.MapPost("/", (TransactionCreateDto dto, ITransactionService tra
         Date = dto.Date,
         Type = dto.Type,
         CategoryId = dto.CategoryId,
-        UserId = dto.UserId
+        UserId = dto.UserId,
+        CreatedBy = dto.UserId
     };
     transactionService.Add(newTransaction);
     return Results.Ok("İşlem başarıyla eklendi.");
@@ -204,9 +220,14 @@ categoryGroup.MapPost("/", (CategoryCreateDto dto, ICategoryService categoryServ
     {
         return Results.BadRequest("Kategori adı boş bırakılamaz");
     }
+    if (dto.CreatedByUserId <= 0)
+    {
+        return Results.BadRequest("Geçersiz kullanıcı bilgisi");
+    }
     var newCategory = new Category()
     {
-        Name = dto.Name
+        Name = dto.Name,
+        CreatedBy = dto.CreatedByUserId
     };
     categoryService.Add(newCategory);
     return Results.Ok("Kategori başarıyla eklendi");
@@ -221,7 +242,12 @@ userGroup.MapPost("/", (UserCreateDto dto, IUserService userService) =>
     }
     if (string.IsNullOrWhiteSpace(dto.Email) || !dto.Email.Contains("@"))
     {
-        return Results.BadRequest("Geçersiz mail tanımlaması");
+        return Results.BadRequest("Geçersiz email adresi.");
+    }
+    var existingUser = userService.GetByEmail(dto.Email);
+    if (existingUser != null)
+    {
+        return Results.BadRequest("Bu email adresi zaten kullanılıyor");
     }
     if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length < 6)
     {
@@ -230,38 +256,64 @@ userGroup.MapPost("/", (UserCreateDto dto, IUserService userService) =>
     var newUser = new User()
     {
         Name = dto.Name,
-        Email = dto.Email,
-        Password = dto.Password
+        Email = dto.Email
     };
+
+    var passwordHasher = new PasswordHasher<User>();
+    newUser.PasswordHash = passwordHasher.HashPassword(newUser, dto.Password);
+
     userService.Add(newUser);
     return Results.Ok("Kullanıcı başarıyla eklendi");
 });
 
 // Belirli bir işlemi güncelle
-transactionGroup.MapPut("/{id}", (int id, TransactionUpdateDto dto, ITransactionService transactionService) =>
+transactionGroup.MapPut("/{id}", (
+    int id,
+    TransactionUpdateDto dto,
+    ITransactionService transactionService,
+    ICategoryService categoryService,
+    IUserService userService) =>
 {
     var transaction = transactionService.GetById(id);
     if (transaction == null)
     {
-        return Results.NotFound("Eşleşen işlem bulunamadı");
+        return Results.NotFound("İşlem bulunamadı.");
     }
     if (dto.Description != null && dto.Description.Length > 100)
     {
-        return Results.BadRequest("Açıklama uzunluğu en fazla 100 karakter içerebilir");
+        return Results.BadRequest("Açıklama en fazla 100 karakter olabilir.");
     }
     if (dto.Amount <= 0)
     {
-        return Results.BadRequest("Tutar değeri sıfır veya daha küçük olamaz");
+        return Results.BadRequest("Tutar 0'dan büyük olmalıdır.");
+    }
+    if (dto.UserId <= 0)
+    {
+        return Results.BadRequest("Geçersiz kullanıcı bilgisi.");
     }
 
-        transaction.Amount = dto.Amount;
-        transaction.CategoryId = dto.CategoryId;
-        transaction.Date = dto.Date;
-        transaction.Description = dto.Description;
-        transaction.Type = dto.Type;
+    var user = userService.GetById(dto.UserId);
+    if (user == null)
+    {
+        return Results.BadRequest("Kullanıcı bulunamadı");
+    }
+    var category = categoryService.GetById(dto.CategoryId);
+    if (category == null)
+    {
+        return Results.BadRequest("Kategori bulunamadı");
+    }
+
+    transaction.Amount = dto.Amount;
+    transaction.CategoryId = dto.CategoryId;
+    transaction.Date = dto.Date;
+    transaction.Description = dto.Description;
+    transaction.Type = dto.Type;
+    transaction.UserId = dto.UserId;
+    transaction.UpdatedBy = dto.UserId;
 
     transactionService.Update(transaction);
-    return Results.Ok("İşlem başarıyla güncelleştirildi");
+
+    return Results.Ok("İşlem başarıyla güncellendi.");
 });
 
 // Belirli bir kategoriyi güncelle
@@ -276,14 +328,19 @@ categoryGroup.MapPut("/{id}", (int id, CategoryUpdateDto dto, ICategoryService c
     {
         return Results.BadRequest("Kategori adı boş bırakılamaz");
     }
+    if (dto.UpdatedByUserId <= 0)
+    {
+        return Results.BadRequest("Geçersiz kullanıcı bilgisi");
+    }
 
-        category.Name = dto.Name;
-        categoryService.Update(category);
+    category.Name = dto.Name;
+    category.UpdatedBy = dto.UpdatedByUserId;
+    categoryService.Update(category);
 
     return Results.Ok("Kategori başarıyla güncellendi");
 });
 
-// Kullanıcı bilgilerini güncelle (kullanıcı kendi bilgilerini güncellemek isteyebilir.)
+// Kullanıcı bilgilerini güncelle
 userGroup.MapPut("/{id}", (int id, UserUpdateDto dto, IUserService userService) =>
 {
     var user = userService.GetById(id);
@@ -299,13 +356,16 @@ userGroup.MapPut("/{id}", (int id, UserUpdateDto dto, IUserService userService) 
     {
         return Results.BadRequest("Geçersiz mail tanımlaması");
     }
-    if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length < 6)
+
+    var existingUserWithEmail = userService.GetByEmail(dto.Email);
+    if (existingUserWithEmail != null && existingUserWithEmail.Id != id)
     {
-        return Results.BadRequest("Şifre en az 6 karakter içermeli");
+        return Results.BadRequest("Bu email adresi başka bir kullanıcı tarafından kullanılıyor");
     }
+
     user.Name = dto.Name;
     user.Email = dto.Email;
-    user.Password = dto.Password;
+    user.UpdatedBy = id;
     userService.Update(user);
     return Results.Ok("Bilgileriniz başarıyla güncellendi");
 });
@@ -315,32 +375,42 @@ transactionGroup.MapDelete("/{id}", (int id, ITransactionService transactionServ
     var transaction = transactionService.GetById(id);
     if (transaction == null)
     {
-        return Results.NotFound("Eşleşen kayıt bulunamadı");
+        return Results.NotFound("İşlem bulunamadı.");
     }
     transactionService.Delete(id);
 
-    return Results.Ok("Silme işlemi başarılı");
+    return Results.Ok("İşlem başarıyla silindi.");
 });
 
-// Belirli bir kategoriyi sil (veritabanı hata verebilir)
-categoryGroup.MapDelete("/{id}", (int id, ICategoryService categoryService) =>
+// Belirli bir kategoriyi sil
+categoryGroup.MapDelete("/{id}", (int id, ICategoryService categoryService, ITransactionService transactionService) =>
 {
     var category = categoryService.GetById(id);
     if (category == null)
     {
         return Results.NotFound("Eşleşen kategori bulunamadı");
     }
+    var hasTransactions = transactionService.HasTransactionsByCategoryId(id);
+    if (hasTransactions)
+    {
+        return Results.BadRequest("Bu kategoriye bağlı işlemler olduğu için kategori silinemez");
+    }
     categoryService.Delete(id);
     return Results.Ok("Kategori silme işlemi başarılı");
 });
 
-// Kullanıcıyı sil (veritabanı hata verebilir)
-userGroup.MapDelete("/{id}", (int id, IUserService userService) =>
+// Kullanıcıyı sil
+userGroup.MapDelete("/{id}", (int id, IUserService userService, ITransactionService transactionService) =>
 {
     var user = userService.GetById(id);
-    if(user == null)
+    if (user == null)
     {
         return Results.NotFound("Kullanıcı bulunamadı");
+    }
+    var hasTransactions = transactionService.HasTransactionsByUserId(id);
+    if (hasTransactions)
+    {
+        return Results.BadRequest("Bu kullanıcıya bağlı işlemler olduğu için kullanıcı silinemez");
     }
     userService.Delete(id);
     return Results.Ok("Kullanıcı silme işlemi başarılı");
@@ -365,6 +435,77 @@ transactionGroup.MapGet("/filter/type", (TransactionType type, ITransactionServi
     .Select(transaction => ConvertToTransactionListDto(transaction))
     .ToList();
     return Results.Ok(result);
+});
+// Kullanıcı girişi
+authGroup.MapPost("/login", (LoginDto dto, IUserService userService) =>
+{
+    if (string.IsNullOrWhiteSpace(dto.Email))
+    {
+        return Results.BadRequest("Email boş bırakılamaz");
+    }
+    if (string.IsNullOrWhiteSpace(dto.Password))
+    {
+        return Results.BadRequest("Şifre boş bırakılamaz");
+    }
+    var user = userService.GetByEmail(dto.Email);
+    if (user == null)
+    {
+        return Results.BadRequest("Email veya şifre hatalı");
+    }
+
+    var passwordHasher = new PasswordHasher<User>();
+    var verificationResult = passwordHasher.VerifyHashedPassword(
+        user,
+        user.PasswordHash,
+        dto.Password);
+
+    if (verificationResult == PasswordVerificationResult.Failed)
+    {
+        return Results.BadRequest("Email veya şifre hatalı");
+    }
+
+    var result = new LoginResponseDto
+    {
+        UserId = user.Id,
+        Name = user.Name,
+        Email = user.Email
+    };
+
+    return Results.Ok(result);
+});
+
+// Kullanıcı şifre değiştirme
+authGroup.MapPost("/change-password", (ChangePasswordDto dto, IUserService userService) =>
+{
+    if (dto.UserId <= 0)
+    {
+        return Results.BadRequest("Geçersiz kullanıcı bilgisi");
+    }
+
+    if (string.IsNullOrWhiteSpace(dto.OldPassword))
+    {
+        return Results.BadRequest("Eski şifre boş bırakılamaz");
+    }
+
+    if (string.IsNullOrWhiteSpace(dto.NewPassword) || dto.NewPassword.Length < 6)
+    {
+        return Results.BadRequest("Yeni şifre en az 6 karakter olmalıdır");
+    }
+
+    var isChanged = userService.ChangePassword(dto.UserId, dto.OldPassword, dto.NewPassword);
+
+    if (!isChanged)
+    {
+        return Results.BadRequest("Kullanıcı bulunamadı veya eski şifre hatalı");
+    }
+
+    return Results.Ok("Şifre başarıyla değiştirildi");
+});
+
+// Kullanıcı çıkışı 
+authGroup.MapPost("/logout", () =>
+{
+    return Results.Ok("Çıkış işlemi başarılı");
 });
 
 app.Run();

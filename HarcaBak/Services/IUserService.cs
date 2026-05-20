@@ -8,5 +8,7 @@ namespace HarcaBak.Services
         void Delete(int id);
         void Update(User user);
         List<User> GetAll();
+        User? GetByEmail(string email);
+        bool ChangePassword(int userId, string oldPassword, string newPassword);
     }
 }

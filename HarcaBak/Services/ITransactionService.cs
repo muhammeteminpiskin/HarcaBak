@@ -15,5 +15,7 @@ namespace HarcaBak.Services
         decimal GetTotalExpenseByUserId(int userId);
         decimal GetTotalIncomeByUserId(int userId);
         decimal GetBalanceByUserId(int userId);
+        bool HasTransactionsByCategoryId(int categoryId);
+        bool HasTransactionsByUserId(int userId);
     }
 }

@@ -1,5 +1,7 @@
 ﻿using HarcaBak.Data;
 using HarcaBak.Entities;
+using Microsoft.AspNetCore.Identity;
+
 namespace HarcaBak.Services
 {
     public class UserService: IUserService
@@ -37,6 +39,38 @@ namespace HarcaBak.Services
         {
             _context.Update(user);
             _context.SaveChanges();
+        }
+        public User? GetByEmail(string email)
+        {
+            return _context.Users
+                .FirstOrDefault(user => user.Email == email);
+        }
+        public bool ChangePassword(int userId, string oldPassword, string newPassword)
+        {
+            var user = GetById(userId);
+
+            if (user == null)
+            {
+                return false;
+            }
+
+            var passwordHasher = new PasswordHasher<User>();
+
+            var verificationResult = passwordHasher.VerifyHashedPassword(
+                user,
+                user.PasswordHash,
+                oldPassword);
+
+            if (verificationResult == PasswordVerificationResult.Failed)
+            {
+                return false;
+            }
+
+            user.PasswordHash = passwordHasher.HashPassword(user, newPassword);
+
+            Update(user);
+
+            return true;
         }
     }
 }
