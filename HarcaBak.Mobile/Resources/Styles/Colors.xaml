@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xaml-comp compile="true" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!--
+    ╔══════════════════════════════════════════════════════╗
+    ║  HarcaBak — Açık Finans Teması                       ║
+    ║  Ana Renk   : Lacivert  #1A4776  (güven/profesyonel) ║
+    ║  Vurgu      : Yeşil     #2E8B57  (büyüme/bütçe)      ║
+    ║  Arka Plan  : #F4F6F9   (açık gri-mavi)              ║
+    ║  Kart       : #FFFFFF   (beyaz)                      ║
+    ╚══════════════════════════════════════════════════════╝
+    -->
+
+    <!-- ══ ANA MARKA RENKLERİ ══ -->
+    <Color x:Key="Primary">#1A4776</Color>
+    <Color x:Key="PrimaryDark">#0D2B4E</Color>
+    <Color x:Key="PrimaryDarkText">#FFFFFF</Color>
+
+    <Color x:Key="Secondary">#2E8B57</Color>
+    <Color x:Key="SecondaryDarkText">#FFFFFF</Color>
+
+    <Color x:Key="Tertiary">#1A4776</Color>
+
+    <!-- ══ TEMEL RENKLER (şablon uyumluluğu) ══ -->
+    <Color x:Key="White">#FFFFFF</Color>
+    <Color x:Key="Black">#000000</Color>
+    <Color x:Key="Midnightblue">#1A4776</Color>
+    <Color x:Key="OffBlack">#1A202C</Color>
+    <Color x:Key="OffWhite">#F4F6F9</Color>
+
+    <!-- ══ GRİ SKALASI (şablon uyumluluğu — silinmedi) ══ -->
+    <Color x:Key="Gray100">#EDF2F7</Color>
+    <Color x:Key="Gray200">#E2E8F0</Color>
+    <Color x:Key="Gray300">#CBD5E0</Color>
+    <Color x:Key="Gray400">#A0AEC0</Color>
+    <Color x:Key="Gray500">#718096</Color>
+    <Color x:Key="Gray600">#4A5568</Color>
+    <Color x:Key="Gray900">#2D3748</Color>
+    <Color x:Key="Gray950">#1A202C</Color>
+
+    <!-- ══ ARKA PLANLAR ══ -->
+    <Color x:Key="LightBackground">#F4F6F9</Color>
+    <Color x:Key="DarkBackground">#1A202C</Color>
+
+    <!-- ══ KART YÜZEYLERİ ══ -->
+    <Color x:Key="CardBackground">#FFFFFF</Color>
+    <Color x:Key="CardBackgroundDark">#E8EDF3</Color>
+
+    <!-- ══ İKON RENKLERİ ══ -->
+    <Color x:Key="IconColor">#1A4776</Color>
+    <Color x:Key="IconColorDark">#FFFFFF</Color>
+
+    <!-- ══ METİN RENKLERİ ══ -->
+    <Color x:Key="TextPrimary">#1A202C</Color>
+    <Color x:Key="TextSecondary">#4A5568</Color>
+    <Color x:Key="TextMuted">#718096</Color>
+    <Color x:Key="TextOnPrimary">#FFFFFF</Color>
+
+    <!-- ══ GİRİŞ ALANLARI ══ -->
+    <Color x:Key="InputBackground">#FFFFFF</Color>
+    <Color x:Key="InputBorder">#CBD5E0</Color>
+
+    <!--
+        PlaceholderColor: Picker Title ("Kategori seç" gibi)
+        ve Entry/Editor placeholder yazıları için.
+    -->
+    <Color x:Key="PlaceholderColor">#A0AEC0</Color>
+
+    <!-- ══ SINIR & AYRAÇ ══ -->
+    <Color x:Key="BorderColor">#CBD5E0</Color>
+    <Color x:Key="DividerColor">#E2E8F0</Color>
+
+    <!-- ══ DURUM RENKLERİ ══ -->
+    <Color x:Key="Success">#2E8B57</Color>
+    <Color x:Key="Warning">#D97706</Color>
+    <Color x:Key="Danger">#C53030</Color>
+    <Color x:Key="Info">#2B6CB0</Color>
+
+</ResourceDictionary>

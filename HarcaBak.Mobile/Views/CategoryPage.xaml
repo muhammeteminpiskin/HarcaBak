@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="HarcaBak.Mobile.Views.CategoryPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Kategoriler">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="25" Spacing="14">
+
+            <Label
+                Text="Kategori Yönetimi"
+                FontSize="28"
+                FontAttributes="Bold"
+                HorizontalOptions="Center" />
+
+            <Entry
+                x:Name="CategoryNameEntry"
+                Placeholder="Kategori adı" />
+
+            <HorizontalStackLayout Spacing="10">
+                <Button
+                    Text="Ekle"
+                    Clicked="OnAddClicked"
+                    HorizontalOptions="FillAndExpand" />
+
+                <Button
+                    Text="Güncelle"
+                    Clicked="OnUpdateClicked"
+                    HorizontalOptions="FillAndExpand" />
+            </HorizontalStackLayout>
+
+            <Button
+                Text="Sil"
+                BackgroundColor="DarkRed"
+                TextColor="White"
+                Clicked="OnDeleteClicked" />
+
+            <Label
+                x:Name="MessageLabel"
+                Text=""
+                FontSize="14"
+                HorizontalOptions="Center"
+                HorizontalTextAlignment="Center" />
+
+            <CollectionView
+                x:Name="CategoriesCollectionView"
+                SelectionMode="Single"
+                SelectionChanged="OnCategorySelected">
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Margin="0,6" Padding="14" CornerRadius="10">
+                            <Label
+                                Text="{Binding Name}"
+                                FontSize="18"
+                                FontAttributes="Bold" />
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

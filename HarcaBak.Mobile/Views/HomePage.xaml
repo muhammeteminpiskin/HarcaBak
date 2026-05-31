@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="HarcaBak.Mobile.Views.HomePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Ana Sayfa">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="30" Spacing="18">
+
+            <Label
+                Text="HarcaBak"
+                FontSize="32"
+                FontAttributes="Bold"
+                HorizontalOptions="Center" />
+
+            <Label
+                x:Name="WelcomeLabel"
+                Text=""
+                FontSize="18"
+                HorizontalOptions="Center"
+                HorizontalTextAlignment="Center" />
+
+            <Frame Padding="16" CornerRadius="12">
+                <VerticalStackLayout Spacing="10">
+
+                    <Label
+                        Text="Finansal Özet"
+                        FontSize="20"
+                        FontAttributes="Bold" />
+
+                    <Label
+                        x:Name="TotalIncomeLabel"
+                        Text="Toplam gelir: -" />
+
+                    <Label
+                        x:Name="TotalExpenseLabel"
+                        Text="Toplam gider: -" />
+
+                    <Label
+                        x:Name="BalanceLabel"
+                        Text="Bakiye: -" />
+
+                </VerticalStackLayout>
+            </Frame>
+
+            <Button
+                Text="İşlemlerimi Gör"
+                Clicked="OnTransactionsClicked" />
+
+            <Button
+                Text="Yeni İşlem Ekle"
+                Clicked="OnAddTransactionClicked" />
+            
+            <Button
+                Text="Kategorileri Yönet"
+                Clicked="OnCategoriesClicked" />
+
+            <Button
+                Text="Şifre Değiştir"
+                Clicked="OnChangePasswordClicked" />
+
+            <Button
+                Text="Çıkış Yap"
+                BackgroundColor="DarkRed"
+                TextColor="White"
+                Clicked="OnLogoutClicked" />
+
+            <Label
+                x:Name="MessageLabel"
+                Text=""
+                FontSize="14"
+                HorizontalOptions="Center"
+                HorizontalTextAlignment="Center" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

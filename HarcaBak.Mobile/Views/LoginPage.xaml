@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="HarcaBak.Mobile.Views.LoginPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Giriş Yap">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="30" Spacing="16">
+
+            <Label
+                Text="HarcaBak"
+                FontSize="32"
+                FontAttributes="Bold"
+                HorizontalOptions="Center" />
+
+            <Label
+                Text="Kişisel bütçeni takip etmek için giriş yap."
+                FontSize="16"
+                HorizontalOptions="Center"
+                HorizontalTextAlignment="Center" />
+
+            <Entry
+                x:Name="EmailEntry"
+                Placeholder="Email"
+                Keyboard="Email" />
+
+            <Entry
+                x:Name="PasswordEntry"
+                Placeholder="Şifre"
+                IsPassword="True" />
+
+            <Button
+                Text="Giriş Yap"
+                Clicked="OnLoginClicked" />
+
+            <Button
+                Text="Hesap Oluştur"
+                Clicked="OnRegisterClicked" />
+
+            <Label
+                x:Name="MessageLabel"
+                Text=""
+                FontSize="14"
+                HorizontalOptions="Center"
+                HorizontalTextAlignment="Center" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

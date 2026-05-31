@@ -1,3 +1,6 @@
 <Solution>
+  <Project Path="HarcaBak.Mobile/HarcaBak.Mobile.csproj" Id="9939a413-470e-4f67-b548-f600bf47688e">
+    <Deploy Solution="Debug|*" />
+  </Project>
   <Project Path="HarcaBak/HarcaBak.csproj" />
 </Solution>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="HarcaBak.Mobile.Views.TransactionEditPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="İşlem Düzenle">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="25" Spacing="14">
+
+            <Label
+                Text="İşlem Düzenle"
+                FontSize="28"
+                FontAttributes="Bold"
+                HorizontalOptions="Center" />
+
+            <Entry
+                x:Name="AmountEntry"
+                Placeholder="Tutar"
+                Keyboard="Numeric" />
+
+            <Entry
+                x:Name="DescriptionEntry"
+                Placeholder="Açıklama"
+                MaxLength="100" />
+
+            <Picker
+                x:Name="CategoryPicker"
+                Title="Kategori seç" />
+
+            <DatePicker
+                x:Name="TransactionDatePicker" />
+
+            <Label
+                Text="İşlem Tipi"
+                FontAttributes="Bold" />
+
+            <HorizontalStackLayout Spacing="20">
+                <RadioButton
+                    x:Name="IncomeRadioButton"
+                    Content="Gelir"
+                    GroupName="EditTransactionType" />
+
+                <RadioButton
+                    x:Name="ExpenseRadioButton"
+                    Content="Gider"
+                    GroupName="EditTransactionType" />
+            </HorizontalStackLayout>
+
+            <Button
+                Text="Güncelle"
+                Clicked="OnUpdateClicked" />
+
+            <Button
+                Text="Sil"
+                BackgroundColor="DarkRed"
+                TextColor="White"
+                Clicked="OnDeleteClicked" />
+
+            <Label
+                x:Name="MessageLabel"
+                Text=""
+                FontSize="14"
+                HorizontalOptions="Center"
+                HorizontalTextAlignment="Center" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

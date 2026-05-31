@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="HarcaBak.Mobile.Views.TransactionListPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="İşlemlerim">
+
+    <VerticalStackLayout Padding="20" Spacing="12">
+
+        <Label
+            Text="İşlemlerim"
+            FontSize="28"
+            FontAttributes="Bold"
+            HorizontalOptions="Center" />
+
+        <Frame Padding="12" CornerRadius="10">
+            <VerticalStackLayout Spacing="10">
+
+                <Label
+                    Text="Filtreleme"
+                    FontAttributes="Bold"
+                    FontSize="18" />
+
+                <HorizontalStackLayout Spacing="10">
+                    <DatePicker x:Name="StartDatePicker" HorizontalOptions="FillAndExpand" />
+                    <DatePicker x:Name="EndDatePicker" HorizontalOptions="FillAndExpand" />
+                </HorizontalStackLayout>
+
+                <Picker
+                    x:Name="FilterCategoryPicker"
+                    Title="Kategori seç" />
+
+                <HorizontalStackLayout Spacing="12">
+                    <Button
+                        Text="Tarih"
+                        Clicked="OnDateFilterClicked"
+                        HorizontalOptions="FillAndExpand" />
+
+                    <Button
+                        Text="Kategori"
+                        Clicked="OnCategoryFilterClicked"
+                        HorizontalOptions="FillAndExpand" />
+                </HorizontalStackLayout>
+
+                <HorizontalStackLayout Spacing="12">
+                    <Button
+                        Text="Gelir"
+                        Clicked="OnIncomeFilterClicked"
+                        HorizontalOptions="FillAndExpand" />
+
+                    <Button
+                        Text="Gider"
+                        Clicked="OnExpenseFilterClicked"
+                        HorizontalOptions="FillAndExpand" />
+
+                    <Button
+                        Text="Tümü"
+                        Clicked="OnClearFilterClicked"
+                        HorizontalOptions="FillAndExpand" />
+                </HorizontalStackLayout>
+
+            </VerticalStackLayout>
+        </Frame>
+
+        <Label
+            x:Name="MessageLabel"
+            Text=""
+            FontSize="14"
+            HorizontalOptions="Center"
+            HorizontalTextAlignment="Center" />
+
+        <RefreshView
+            x:Name="TransactionsRefreshView"
+            Refreshing="OnRefreshing">
+
+            <CollectionView
+                x:Name="TransactionsCollectionView"
+                SelectionMode="Single"
+                SelectionChanged="OnTransactionSelected">
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Margin="0,6" Padding="14" CornerRadius="10">
+                            <VerticalStackLayout Spacing="4">
+
+                                <Label
+                                    Text="{Binding CategoryName}"
+                                    FontSize="18"
+                                    FontAttributes="Bold" />
+
+                                <Label
+                                    Text="{Binding Description}"
+                                    FontSize="14" />
+
+                                <Label
+                                    Text="{Binding AmountText}"
+                                    FontSize="16"
+                                    FontAttributes="Bold" />
+
+                                <Label
+                                    Text="{Binding TypeText}"
+                                    FontSize="14" />
+
+                                <Label
+                                    Text="{Binding DateText}"
+                                    FontSize="13" />
+
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </RefreshView>
+
+    </VerticalStackLayout>
+</ContentPage>
