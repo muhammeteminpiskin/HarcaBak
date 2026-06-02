@@ -5,15 +5,20 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     Title="İşlemlerim">
 
-    <VerticalStackLayout Padding="20" Spacing="12">
+    <Grid Padding="20" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="12">
 
         <Label
+            Grid.Row="0"
             Text="İşlemlerim"
             FontSize="28"
             FontAttributes="Bold"
             HorizontalOptions="Center" />
 
-        <Frame Padding="12" CornerRadius="10">
+        <Frame
+            Grid.Row="1"
+            Padding="12"
+            CornerRadius="10">
+
             <VerticalStackLayout Spacing="10">
 
                 <Label
@@ -22,8 +27,13 @@
                     FontSize="18" />
 
                 <HorizontalStackLayout Spacing="10">
-                    <DatePicker x:Name="StartDatePicker" HorizontalOptions="FillAndExpand" />
-                    <DatePicker x:Name="EndDatePicker" HorizontalOptions="FillAndExpand" />
+                    <DatePicker
+                        x:Name="StartDatePicker"
+                        HorizontalOptions="FillAndExpand" />
+
+                    <DatePicker
+                        x:Name="EndDatePicker"
+                        HorizontalOptions="FillAndExpand" />
                 </HorizontalStackLayout>
 
                 <Picker
@@ -63,6 +73,7 @@
         </Frame>
 
         <Label
+            Grid.Row="2"
             x:Name="MessageLabel"
             Text=""
             FontSize="14"
@@ -70,17 +81,24 @@
             HorizontalTextAlignment="Center" />
 
         <RefreshView
+            Grid.Row="3"
             x:Name="TransactionsRefreshView"
-            Refreshing="OnRefreshing">
+            Refreshing="OnRefreshing"
+            VerticalOptions="FillAndExpand">
 
             <CollectionView
                 x:Name="TransactionsCollectionView"
                 SelectionMode="Single"
-                SelectionChanged="OnTransactionSelected">
+                SelectionChanged="OnTransactionSelected"
+                VerticalOptions="FillAndExpand">
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Frame Margin="0,6" Padding="14" CornerRadius="10">
+                        <Frame
+                            Margin="0,6"
+                            Padding="14"
+                            CornerRadius="10">
+
                             <VerticalStackLayout Spacing="4">
 
                                 <Label
@@ -109,9 +127,9 @@
                         </Frame>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
-            </CollectionView>
 
+            </CollectionView>
         </RefreshView>
 
-    </VerticalStackLayout>
+    </Grid>
 </ContentPage>

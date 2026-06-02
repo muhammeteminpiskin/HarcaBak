@@ -68,7 +68,7 @@ transactionGroup.MapGet("/", (ITransactionService transactionService) =>
     return Results.Ok(results);
 });
 
-// Bütün kullanıcıları listele (admin paneli için)
+// Bütün kullanıcıları listele 
 userGroup.MapGet("/", (IUserService userService) =>
 {
     var users = userService.GetAll();
